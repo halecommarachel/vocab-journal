@@ -32,4 +32,7 @@ public class VocabJournalTextUtil {
     public static final String WORD_TEST_CARD_TITLE = "Word Test";
     public static final String WRONG_ANSWER_CARD_TITLE = "Keeping Trying";
     public static final String CORRECT_ANSWER_CARD_TITLE = "Correct!";
+    public static final String MULTIPLE_DEFINITION_FORMAT = "%s has more than one definition. ";
+    public static final String MULTIPLE_DEFINITION_QUERY_FORMAT = "Would you like to use this definition? %s";
+    public static final String NO_MORE_DEFINITIONS_FORMAT = "There are no more definitions available for %s.";
 }

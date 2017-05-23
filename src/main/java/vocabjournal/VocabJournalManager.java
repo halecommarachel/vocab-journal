@@ -12,6 +12,7 @@ import vocabjournal.storage.VocabJournalDao;
 import vocabjournal.storage.VocabJournalDynamoDbClient;
 import vocabjournal.storage.VocabJournalUserDataItem;
 
+import java.util.Deque;
 import java.util.Map;
 
 /**
@@ -26,6 +27,7 @@ public class VocabJournalManager {
     private static final String SLOT_TEST_TYPE = "testType";
     private static final String WORD_ATTRIBUTE = "word";
     private static final String DEFINITION_ATTRIBUTE = "definition";
+    private static final String DEFINITION_DEQUE_ATTRIBUTE = "definitionDeque";
 
     private final DictionaryClient dictionaryClient = DictionaryClient.getInstance();
     private final VocabJournalDao vocabJournalDao;
@@ -52,24 +54,58 @@ public class VocabJournalManager {
                 String content = String.format(VocabJournalTextUtil.ADD_EXISTING_WORD_FORMAT, newWord);
                 return getNewTellResponseSameReprompt(content, false, null);
             }
-            String definition = dictionaryClient.lookupWord(newWord);
-            if (definition == null) {
+            Deque<String> definitionDeque = dictionaryClient.lookupWord(newWord);
+            if (definitionDeque == null) {
                 return getNewTellResponseSameReprompt(VocabJournalTextUtil.INVALID_WORD_HELP, false, null);
             } else {
-                log.debug(String.format("Adding %s : %s", newWord, definition));
-                // store word and definition
-                vocabJournalDao.saveItem(session, newWord, definition);
+                session.setAttribute(WORD_ATTRIBUTE, newWord);
+                String firstDefinition = definitionDeque.removeFirst();
+                session.setAttribute(DEFINITION_ATTRIBUTE, firstDefinition);
 
-                String speechContent = String.format(VocabJournalTextUtil.ADDED_WORD_FORMAT, newWord, definition);
+                if (definitionDeque.isEmpty()) {
+                    // There is only one definition, save this
+                    return getDefinitionYesIntentResponse(session);
+                }
+                session.setAttribute(DEFINITION_DEQUE_ATTRIBUTE, definitionDeque);
+                String content = String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_FORMAT, newWord) + String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_QUERY_FORMAT, firstDefinition);
 
-                SimpleCard card = new SimpleCard();
-                String cardContent = String.format(VocabJournalTextUtil.ADDED_WORD_CARD_CONTENT_FORMAT, newWord, definition);
-                card.setTitle(String.format(VocabJournalTextUtil.ADDED_WORD_CARD_TITLE_FORMAT, newWord));
-                card.setContent(cardContent);
-
-                return getNewTellResponseSameReprompt(speechContent, false, card);
+                return getNewAskResponseSameReprompt(content, false, null);
             }
         }
+    }
+
+    public SpeechletResponse getDefinitionYesIntentResponse(Session session) {
+        String word = (String) session.getAttribute(WORD_ATTRIBUTE);
+        String definition = (String) session.getAttribute(DEFINITION_ATTRIBUTE);
+        log.debug(String.format("Adding %s : %s", word, word));
+        // store word and definition
+        vocabJournalDao.saveItem(session, word, definition);
+
+        String speechContent = String.format(VocabJournalTextUtil.ADDED_WORD_FORMAT, word, definition);
+
+        SimpleCard card = new SimpleCard();
+        String cardContent = String.format(VocabJournalTextUtil.ADDED_WORD_CARD_CONTENT_FORMAT, word, definition);
+        card.setTitle(String.format(VocabJournalTextUtil.ADDED_WORD_CARD_TITLE_FORMAT, word));
+        card.setContent(cardContent);
+
+        return getNewTellResponseSameReprompt(speechContent, false, card);
+    }
+
+    public SpeechletResponse getDefinitionNoResponse(Session session) {
+        String word = (String) session.getAttribute(WORD_ATTRIBUTE);
+        Deque<String> definitionDeque = (Deque<String>) session.getAttribute(DEFINITION_DEQUE_ATTRIBUTE);
+        if (definitionDeque.isEmpty()) {
+            session.removeAttribute(WORD_ATTRIBUTE);
+            session.removeAttribute(DEFINITION_ATTRIBUTE);
+            session.removeAttribute(DEFINITION_DEQUE_ATTRIBUTE);
+            String content = String.format(VocabJournalTextUtil.NO_MORE_DEFINITIONS_FORMAT, word);
+            return getNewTellResponseSameReprompt(content, false, null);
+        }
+        String nextDefinition = definitionDeque.removeFirst();
+        session.setAttribute(DEFINITION_ATTRIBUTE, nextDefinition);
+
+        String content = String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_QUERY_FORMAT, nextDefinition);
+        return getNewAskResponseSameReprompt(content, false, null);
     }
 
     public SpeechletResponse getVocabTestIntentResponse() {

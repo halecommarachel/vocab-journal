@@ -1,28 +1,18 @@
 package vocabjournal;
 
-import com.amazonaws.util.json.Jackson;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.google.gson.JsonObject;
-import com.sun.org.apache.xerces.internal.dom.DeferredTextImpl;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Queue;
+
+//import com.google.gson.JsonObject;
 
 /**
  * Created by rachhale on 4/24/17.
@@ -46,8 +36,8 @@ public class DictionaryClient {
         return client;
     }
 
-    public String lookupWord(String word) {
-        String definition = null;
+    public Deque<String> lookupWord(String word) {
+        Deque<String> definitions = new ArrayDeque<>();
         word = word.toLowerCase();
         String urlString = REQUEST_PATH + LANGUAGE + "/" + word;
         try {
@@ -76,20 +66,26 @@ public class DictionaryClient {
                 JsonNode entriesNode = allEntriesNode.get("entries");
                 JsonNode entryNode = entriesNode.get(0);
                 JsonNode sensesNode = entryNode.get("senses");
-                JsonNode senseNode = sensesNode.get(0);
-                JsonNode definitionsNode = senseNode.get("definitions");
-                definition = definitionsNode.get(0).asText();
+
+                if (sensesNode.isArray()) {
+                    for (final JsonNode senseNode : sensesNode) {
+                        JsonNode definitionsNode = senseNode.get("definitions");
+                        String definition = definitionsNode.get(0).asText();
+                        definitions.add(definition);
+                    }
+                }
             } else {
                 return null;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return definition;
+        return definitions;
     }
 
     public static void main(String[] args) {
-        DictionaryClient client = new DictionaryClient();
+        DictionaryClient client = DictionaryClient.getInstance();
+        client.lookupWord("abrasive");
         assert(client.lookupWord("fakkity") == null);
         assert(client.lookupWord("asperity").equals("harshness of tone or manner"));
         assert(client.lookupWord("objurgate").equals("rebuke severely; scold"));

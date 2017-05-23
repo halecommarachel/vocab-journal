@@ -52,6 +52,10 @@ public class VocabJournalSpeechlet implements Speechlet {
             return vocabJournalManager.getHelpIntentResponse();
         } else if ("AMAZON.StopIntent".equals(intentName) || "AMAZON.CancelIntent".equals(intentName)) {
             return vocabJournalManager.getStopIntentResponse();
+        } else if ("AMAZON.YesIntent".equals(intentName)) {
+            return vocabJournalManager.getDefinitionYesIntentResponse(session);
+        } else if ("AMAZON.NoIntent".equals(intentName)) {
+            return vocabJournalManager.getDefinitionNoResponse(session);
         } else {
             throw new SpeechletException("Invalid Intent");
         }
