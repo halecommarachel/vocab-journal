@@ -109,13 +109,13 @@ public class VocabJournalManager {
             String word = (String) session.getAttribute(WORD_ATTRIBUTE);
 
 //        String[] definitions =  (String [])session.getAttribute(DEFINITION_ARRAY_ATTRIBUTE);
-            if (definitionList.isEmpty()) {
+            int index = (int) session.getAttribute(DEFINITION_INDEX);
+            if (index > definitionList.size()) {
                 // there are no more definitions
                 clearAttributes(session);
                 String content = String.format(VocabJournalTextUtil.NO_MORE_DEFINITIONS_FORMAT, word);
                 return getNewTellResponseSameReprompt(content, false, null);
             }
-            int index = (int) session.getAttribute(DEFINITION_INDEX);
             String nextDefinition = (String) definitionList.get(index);
             session.setAttribute(DEFINITION_ATTRIBUTE, nextDefinition);
             session.setAttribute(DEFINITION_INDEX, ++index);
