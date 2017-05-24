@@ -6,7 +6,7 @@ package vocabjournal;
 public class VocabJournalTextUtil {
     public static final String STARTUP_HELP_SSML = "<speak>Welcome to <phoneme alphabet=\"ipa\" ph=\"'voʊ kæb\">Vocab</phoneme> Journal. You can add a word, start a test, or delete a word. What would you like to do? </speak> ";
     public static final String STARTUP_HELP_CARD_CONTENT = "Welcome to Vocab Journal. You can add a word, start a test, or delete a word. What would you like to do?";
-    public static final String COMPLETE_HELP = "Here are some things you can say. Add chagrin. Test me. Reverse-test me. Delete chagrin" +
+    public static final String COMPLETE_HELP = "Here are some things you can say. Add chagrin. Start a word test. Start a definition test. Delete chagrin" +
             " You can also say, stop, if you're done. So, how can I help?";
     public static final String DEFINITION_TEST_HELP = "Start your response with, the definition is.";
     public static final String WORD_TEST_HELP = "Start your response with, the word is";
@@ -27,7 +27,7 @@ public class VocabJournalTextUtil {
     public static final String WELCOME_CARD_TITLE = "Welcome to Vocab Journal";
     public static final String ADDED_WORD_CARD_TITLE_FORMAT = "Added %s to your journal";
     public static final String ADDED_WORD_CARD_CONTENT_FORMAT = "%s:%s";
-    public static final String TEST_TYPE_REQUEST = "You can start a word test, where you give the word corresponding to a definition, or a definition test, where you precisely define a word. What would you like do?";
+    public static final String TEST_TYPE_REQUEST = "You can start a word test, a definition test, or get help. What would you like to do?";
     public static final String DEFINITION_TEST_CARD_TITLE = "Definition Test";
     public static final String WORD_TEST_CARD_TITLE = "Word Test";
     public static final String WRONG_ANSWER_CARD_TITLE = "Keeping Trying";

@@ -108,11 +108,19 @@ public class VocabJournalManager {
         return getNewAskResponseSameReprompt(content, false, null);
     }
 
-    public SpeechletResponse getVocabTestIntentResponse() {
+    public SpeechletResponse getTestIntentResponse(Session session, Intent intent) {
+        if (intent.getSlots().containsKey(SLOT_TEST_TYPE)) {
+            String type = intent.getSlot(SLOT_TEST_TYPE).getValue();
+            if ("word".equals(type)) {
+                return getWordTestIntentResponse(session);
+            } else if ("definition".equals(type)) {
+                return getDefinitionTestIntentResponse(session);
+            }
+        }
         return getNewAskResponseSameReprompt(VocabJournalTextUtil.TEST_TYPE_REQUEST, false, null);
     }
 
-    public SpeechletResponse getTestIntentResponse(Session session, Intent intent) {
+    public SpeechletResponse getTestTypeIntentResponse(Session session, Intent intent) {
         if (intent.getSlots().containsKey(SLOT_TEST_TYPE)) {
             String type = intent.getSlot(SLOT_TEST_TYPE).getValue();
             if ("word".equals(type)) {

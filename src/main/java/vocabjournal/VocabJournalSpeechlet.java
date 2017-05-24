@@ -38,14 +38,13 @@ public class VocabJournalSpeechlet implements Speechlet {
         if ("AddWordIntent".equals(intentName)) {
             return vocabJournalManager.getAddWordIntentResponse(session, intent);
         } else if ("VocabTestIntent".equals(intentName)) {
-            return vocabJournalManager.getVocabTestIntentResponse();
+            return vocabJournalManager.getTestIntentResponse(session, intent);
         } else if ("TestTypeIntent".equals(intentName)) {
-
-            return vocabJournalManager.getDefinitionTestAnswerIntentResponse(session, intent);
+            return vocabJournalManager.getTestTypeIntentResponse(session, intent);
         } else if ("WordTestAnswerIntent".equals(intentName)) {
-            return vocabJournalManager.getWordTestIntentResponse(session);
-        } else if ("DefinitionTestAnswerIntent".equals(intentName)) {
             return vocabJournalManager.getWordTestAnswerIntentResponse(session, intent);
+        } else if ("DefinitionTestAnswerIntent".equals(intentName)) {
+            return vocabJournalManager.getDefinitionTestAnswerIntentResponse(session, intent);
         } else if ("DeleteWordIntent".equals(intentName)) {
             return vocabJournalManager.deleteWordIntentResponse(session, intent);
         } else if ("AMAZON.HelpIntent".equals(intentName)) {
