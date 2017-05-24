@@ -12,6 +12,8 @@ import vocabjournal.storage.VocabJournalDao;
 import vocabjournal.storage.VocabJournalDynamoDbClient;
 import vocabjournal.storage.VocabJournalUserDataItem;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.Map;
 
@@ -27,7 +29,8 @@ public class VocabJournalManager {
     private static final String SLOT_TEST_TYPE = "testType";
     private static final String WORD_ATTRIBUTE = "word";
     private static final String DEFINITION_ATTRIBUTE = "definition";
-    private static final String DEFINITION_DEQUE_ATTRIBUTE = "definitionDeque";
+    private static final String DEFINITION_ARRAY_ATTRIBUTE = "definitionArray";
+    private static final String DEFINITION_INDEX = "definitionIndex";
 
     private final DictionaryClient dictionaryClient = DictionaryClient.getInstance();
     private final VocabJournalDao vocabJournalDao;
@@ -54,19 +57,21 @@ public class VocabJournalManager {
                 String content = String.format(VocabJournalTextUtil.ADD_EXISTING_WORD_FORMAT, newWord);
                 return getNewTellResponseSameReprompt(content, false, null);
             }
-            Deque<String> definitionDeque = dictionaryClient.lookupWord(newWord);
-            if (definitionDeque == null) {
+            String[] definitions = dictionaryClient.lookupWord(newWord);
+            if (definitions == null) {
                 return getNewTellResponseSameReprompt(VocabJournalTextUtil.INVALID_WORD_HELP, false, null);
             } else {
                 session.setAttribute(WORD_ATTRIBUTE, newWord);
-                String firstDefinition = definitionDeque.removeFirst();
+                // set index to next element in definition array
+                session.setAttribute(DEFINITION_INDEX, 1);
+                String firstDefinition = definitions[0];
                 session.setAttribute(DEFINITION_ATTRIBUTE, firstDefinition);
 
-                if (definitionDeque.isEmpty()) {
+                if (definitions.length == 0) {
                     // There is only one definition, save this
                     return getDefinitionYesIntentResponse(session);
                 }
-                session.setAttribute(DEFINITION_DEQUE_ATTRIBUTE, definitionDeque);
+                session.setAttribute(DEFINITION_ARRAY_ATTRIBUTE, definitions);
                 String content = String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_FORMAT, newWord) + String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_QUERY_FORMAT, firstDefinition);
 
                 return getNewAskResponseSameReprompt(content, false, null);
@@ -75,6 +80,9 @@ public class VocabJournalManager {
     }
 
     public SpeechletResponse getDefinitionYesIntentResponse(Session session) {
+        if (!session.getAttributes().containsKey(WORD_ATTRIBUTE)) {
+            return getNewTellResponseSameReprompt(VocabJournalTextUtil.COMPLETE_HELP, false, null);
+        }
         String word = (String) session.getAttribute(WORD_ATTRIBUTE);
         String definition = (String) session.getAttribute(DEFINITION_ATTRIBUTE);
         log.debug(String.format("Adding %s : %s", word, word));
@@ -92,20 +100,31 @@ public class VocabJournalManager {
     }
 
     public SpeechletResponse getDefinitionNoResponse(Session session) {
-        String word = (String) session.getAttribute(WORD_ATTRIBUTE);
-        Deque<String> definitionDeque = (Deque<String>) session.getAttribute(DEFINITION_DEQUE_ATTRIBUTE);
-        if (definitionDeque.isEmpty()) {
-            session.removeAttribute(WORD_ATTRIBUTE);
-            session.removeAttribute(DEFINITION_ATTRIBUTE);
-            session.removeAttribute(DEFINITION_DEQUE_ATTRIBUTE);
-            String content = String.format(VocabJournalTextUtil.NO_MORE_DEFINITIONS_FORMAT, word);
-            return getNewTellResponseSameReprompt(content, false, null);
+        if (!session.getAttributes().containsKey(WORD_ATTRIBUTE) || !session.getAttributes().containsKey(DEFINITION_ARRAY_ATTRIBUTE)) {
+            return getNewTellResponseSameReprompt(VocabJournalTextUtil.COMPLETE_HELP, false, null);
         }
-        String nextDefinition = definitionDeque.removeFirst();
-        session.setAttribute(DEFINITION_ATTRIBUTE, nextDefinition);
+        Object definitionArrayObject = session.getAttribute(DEFINITION_ARRAY_ATTRIBUTE);
+        if (definitionArrayObject instanceof ArrayList) {
+            ArrayList definitionList = (ArrayList) definitionArrayObject;
+            String word = (String) session.getAttribute(WORD_ATTRIBUTE);
 
-        String content = String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_QUERY_FORMAT, nextDefinition);
-        return getNewAskResponseSameReprompt(content, false, null);
+//        String[] definitions =  (String [])session.getAttribute(DEFINITION_ARRAY_ATTRIBUTE);
+            if (definitionList.isEmpty()) {
+                // there are no more definitions
+                clearAttributes(session);
+                String content = String.format(VocabJournalTextUtil.NO_MORE_DEFINITIONS_FORMAT, word);
+                return getNewTellResponseSameReprompt(content, false, null);
+            }
+            int index = (int) session.getAttribute(DEFINITION_INDEX);
+            String nextDefinition = (String) definitionList.get(index);
+            session.setAttribute(DEFINITION_ATTRIBUTE, nextDefinition);
+            session.setAttribute(DEFINITION_INDEX, ++index);
+
+            String content = String.format(VocabJournalTextUtil.MULTIPLE_DEFINITION_QUERY_FORMAT, nextDefinition);
+            return getNewAskResponseSameReprompt(content, false, null);
+        } else {
+            return getNewAskResponseSameReprompt(VocabJournalTextUtil.COMPLETE_HELP, false, null);
+        }
     }
 
     public SpeechletResponse getTestIntentResponse(Session session, Intent intent) {
@@ -331,5 +350,12 @@ public class VocabJournalManager {
             }
         }
         return false;
+    }
+
+    private void clearAttributes(Session session) {
+        session.removeAttribute(WORD_ATTRIBUTE);
+        session.removeAttribute(DEFINITION_ATTRIBUTE);
+        session.removeAttribute(DEFINITION_ARRAY_ATTRIBUTE);
+        session.removeAttribute(DEFINITION_INDEX);
     }
 }

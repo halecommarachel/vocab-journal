@@ -10,7 +10,7 @@ public class VocabJournalTextUtil {
             " You can also say, stop, if you're done. So, how can I help?";
     public static final String DEFINITION_TEST_HELP = "Start your response with, the definition is.";
     public static final String WORD_TEST_HELP = "Start your response with, the word is";
-    public static final String INVALID_WORD_HELP = "Entries must be a word from the Oxford Dictionary.";
+    public static final String INVALID_WORD_HELP = "The word you would like to add is not found in the Oxford Dictionary. Please try another word.";
     public static final String INVALID_INPUT_ADD_WORD_HELP = "To add a word, like chagrin for example, you can say, add chagrin.";
     public static final String INVALID_INPUT_DELETE_WORD_HELP = "To delete a word, like chagrin for example, you can say, delete chagrin.";
     public static final String DELETE_WORD_NOT_PRESENT_FORMAT = "%s is not present in your journal.";

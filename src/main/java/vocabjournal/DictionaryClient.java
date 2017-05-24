@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Queue;
+import java.util.*;
 
 //import com.google.gson.JsonObject;
 
@@ -36,8 +34,8 @@ public class DictionaryClient {
         return client;
     }
 
-    public Deque<String> lookupWord(String word) {
-        Deque<String> definitions = new ArrayDeque<>();
+    public String[] lookupWord(String word) {
+        List<String> definitions = new ArrayList<>();
         word = word.toLowerCase();
         String urlString = REQUEST_PATH + LANGUAGE + "/" + word;
         try {
@@ -80,12 +78,12 @@ public class DictionaryClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return definitions;
+        return definitions.toArray(new String[1]);
     }
 
     public static void main(String[] args) {
         DictionaryClient client = DictionaryClient.getInstance();
-        client.lookupWord("abrasive");
+        client.lookupWord("caustic");
         assert(client.lookupWord("fakkity") == null);
         assert(client.lookupWord("asperity").equals("harshness of tone or manner"));
         assert(client.lookupWord("objurgate").equals("rebuke severely; scold"));
