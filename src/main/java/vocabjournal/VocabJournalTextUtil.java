@@ -19,14 +19,14 @@ public class VocabJournalTextUtil {
     public static final String NO_WORDS_TEST_HELP = "Please add a word before beginning a test. For example, you can say, add chagrin.";
     public static final String ADDED_WORD_FORMAT = "Added %s, %s, to your journal";
     public static final String DEFINITION_TEST_FORMAT = "What is the definition of: %s.";
-    public static final String WORD_TEST_FORMAT = "What word corresponds to this definition? %s.";
+    public static final String WORD_TEST_FORMAT = "What word corresponds to this definition?\n%s.";
     public static final String CORRECT_DEFINITION_TEST_ANSWER_FORMAT = "You learned %s!";
     public static final String CORRECT_WORD_TEST_ANSWER_FORMAT = "%s is correct!";
     public static final String INCORRECT_DEFINITION_TEST_ANSWER_FORMAT = "%s means %s.";
     public static final String INCORRECT_WORD_TEST_ANSWER_FORMAT = "The correct word is %s.";
     public static final String WELCOME_CARD_TITLE = "Welcome to Vocab Journal";
     public static final String ADDED_WORD_CARD_TITLE_FORMAT = "Added %s to your journal";
-    public static final String ADDED_WORD_CARD_CONTENT_FORMAT = "%s:%s";
+    public static final String ADDED_WORD_CARD_CONTENT_FORMAT = "%s : %s";
     public static final String TEST_TYPE_REQUEST = "You can start a word test, a definition test, or get help. What would you like to do?";
     public static final String DEFINITION_TEST_CARD_TITLE = "Definition Test";
     public static final String WORD_TEST_CARD_TITLE = "Word Test";

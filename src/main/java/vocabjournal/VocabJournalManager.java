@@ -172,7 +172,7 @@ public class VocabJournalManager {
                 String definition = (String) session.getAttribute(DEFINITION_ATTRIBUTE);
                 String content;
                 SimpleCard simpleCard = new SimpleCard();
-                if (userKnowsAnswer(session, intent)) {
+                if (userKnowsAnswer(definition, intent)) {
                     content = String.format(VocabJournalTextUtil.CORRECT_DEFINITION_TEST_ANSWER_FORMAT, word);
                     simpleCard.setTitle(VocabJournalTextUtil.CORRECT_ANSWER_CARD_TITLE);
                 } else {
@@ -334,19 +334,15 @@ public class VocabJournalManager {
         }
     }
 
-    private boolean userKnowsAnswer(Session session, Intent intent) {
+    private boolean userKnowsAnswer(String correctDefinition, Intent intent) {
         Slot definitionSlot = intent.getSlot(SLOT_DEFINITION);
         if (definitionSlot != null) {
             String userDefinition = definitionSlot.getValue();
-            Map<String, Object> attributes = session.getAttributes();
-            String correctDefinition = (String) attributes.get(DEFINITION_ATTRIBUTE);
             // remove punctuation
-            correctDefinition = correctDefinition.replaceAll("[.,;]", "");
+            correctDefinition = correctDefinition.replaceAll("[.,;()]", "");
             log.debug("Correct definition, no punc [{}], user definition [{}]", correctDefinition, userDefinition);
-            if (attributes.containsKey(DEFINITION_ATTRIBUTE)) {
-                if (userDefinition.equals(correctDefinition)) {
-                    return true;
-                }
+            if (userDefinition.equals(correctDefinition)) {
+                return true;
             }
         }
         return false;
